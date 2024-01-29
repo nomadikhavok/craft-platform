@@ -1,0 +1,506 @@
+openapi: 3.1.0
+x-stoplight:
+  id: bcbapfup6a9p6
+info:
+  version: '1.0'
+  title: ProjectAPI
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  '/users/{userId}':
+    get:
+      summary: Get User Info by User ID
+      description: Retrieve the information of the user with the matching user ID.
+      operationId: get-users-userId
+      parameters:
+        - name: userId
+          in: path
+          description: Id of an existing user.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Get User Alice Smith:
+                  value:
+                    id: 142
+                    firstName: Alice
+                    lastName: Smith
+                    email: alice.smith@gmail.com
+                    dateOfBirth: '1997-10-31'
+                    emailVerified: true
+                    signUpDate: '2019-08-24'
+        '404':
+          description: User Not Found
+      servers:
+        - url: 'http://localhost:3000'
+      x-stoplight:
+        id: cu3s9ghxk8c5t
+    patch:
+      summary: Update User Information
+      description: Update the information of an existing user.
+      operationId: patch-users-userId
+      parameters:
+        - name: userId
+          in: path
+          description: Id of an existing user.
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Patch user properties to update.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+                  description: 'If a new email is given, the user''s email verified property will be set to false.'
+                dateOfBirth:
+                  type: string
+            examples:
+              Update First Name:
+                value:
+                  firstName: Rebecca
+              Update Email:
+                value:
+                  email: rebecca@gmail.com
+              Update Last Name & Date of Birth:
+                value:
+                  lastName: Baker
+                  dateOfBirth: '1985-10-02'
+      responses:
+        '200':
+          description: User Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Updated User Rebecca Baker:
+                  value:
+                    id: 13
+                    firstName: Rebecca
+                    lastName: Baker
+                    email: rebecca@gmail.com
+                    dateOfBirth: '1985-10-02'
+                    emailVerified: false
+                    createDate: '2019-08-24'
+        '404':
+          description: User Not Found
+        '409':
+          description: Email Already Taken
+      servers:
+        - url: 'http://localhost:3000'
+      x-stoplight:
+        id: pkh5obc5go8j9
+  /user:
+    post:
+      summary: Create New User
+      description: Create a new user.
+      operationId: post-user
+      requestBody:
+        description: Post the necessary fields for the API to create a new user.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+                dateOfBirth:
+                  type: string
+                  format: date
+              required:
+                - firstName
+                - lastName
+                - email
+                - dateOfBirth
+            examples:
+              Create User Bob Fellow:
+                value:
+                  firstName: Bob
+                  lastName: Fellow
+                  email: bob.fellow@gmail.com
+                  dateOfBirth: '1996-08-24'
+      responses:
+        '200':
+          description: User Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                New User Bob Fellow:
+                  value:
+                    id: 12
+                    firstName: Bob
+                    lastName: Fellow
+                    email: bob.fellow@gmail.com
+                    dateOfBirth: '1996-08-24'
+                    emailVerified: false
+                    createDate: '2020-11-18'
+        '400':
+          description: Missing Required Information
+        '409':
+          description: Email Already Taken
+      servers:
+        - url: 'http://localhost:3000'
+      x-stoplight:
+        id: r2bhxhg9qk5lv
+  /project:
+    post:
+      summary: ''
+      operationId: post-project
+      requestBody:
+        description: 'The framework of project details. The details are related to the project_type. '
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                project_id:
+                  type: string
+                project_alias:
+                  type: string
+                project_name:
+                  type: string
+                project_type:
+                  type: string
+                  enum:
+                    - diamond_painting
+                    - puzzle
+                events:
+                  type: array
+                  items:
+                    type: object
+                details:
+                  type: object
+                  description: |-
+                    In order to support multiple types of projects details can differ between project types.
+                    The details structure based on its own project validation.
+                  properties:
+                    width:
+                      type: number
+                    height:
+                      type: number
+                    unit:
+                      type: string
+                      enum:
+                        - metric
+                        - imperial
+                    type:
+                      type: string
+                    makeup:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          colors:
+                            type: integer
+                          electro_beads:
+                            type: integer
+                          aurora borealis:
+                            type: integer
+                          fairydust beads:
+                            type: integer
+              required:
+                - project_id
+                - project_name
+                - project_type
+                - details
+      responses:
+        '200':
+          description: OK
+      servers:
+        - url: 'http://localhost:3000'
+      x-stoplight:
+        id: d6w0z1mgys86k
+  '/projects/{project_id}':
+    get:
+      summary: Your GET endpoint
+      description: Returning a project based on the the project_id.
+      operationId: get-project
+      parameters:
+        - name: project_id
+          in: path
+          description: UUID project id string
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          headers:
+            project_type:
+              schema:
+                type: string
+              description: Type of Project returned help facilitate customer parsing.
+      servers:
+        - url: 'http://localhost:3000'
+      x-stoplight:
+        id: pqthm6rok82qx
+    delete:
+      summary: ''
+      operationId: delete-project
+      parameters:
+        - name: project_id
+          in: path
+          description: UUID project id string
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+      servers:
+        - url: 'http://localhost:3000'
+      x-stoplight:
+        id: h6uepqzc9vave
+components:
+  schemas:
+    User:
+      type: object
+      title: User
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the given user.
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        dateOfBirth:
+          type: string
+          format: date
+          examples:
+            - '1997-10-31'
+        emailVerified:
+          type: boolean
+          description: Set to true if the user's email has been verified.
+        createDate:
+          type: string
+          description: The date that the user was created.
+          format: date
+      required:
+        - id
+        - firstName
+        - lastName
+        - email
+        - emailVerified
+      examples:
+        - id: 142
+          firstName: Alice
+          lastName: Smith
+          email: alice.smith@gmail.com
+          dateOfBirth: '1997-10-31'
+          emailVerified: true
+          signUpDate: '2019-08-24'
+      x-stoplight:
+        id: 9nsmwa5odwb3f
+    Project:
+      type: object
+      description: The project properties of a generic project with events and details.
+      properties:
+        project_id:
+          type: string
+        project_alias:
+          type: string
+        project_name:
+          type: string
+        events:
+          type: array
+          items:
+            type: object
+        details:
+          description: |
+            Different project details based on the type of project.
+          oneOf:
+            - $ref: '#/components/schemas/DiamondPainting'
+            - $ref: '#/components/schemas/Puzzle'
+      required:
+        - project_id
+        - project_name
+        - details
+      x-stoplight:
+        id: vn8jdu5pt3d8a
+    DiamondPainting:
+      type: object
+      properties:
+        dimensions:
+          $ref: '#/components/schemas/Dimension'
+        bead_shape:
+          type: string
+          enum:
+            - square
+            - round
+          default: square
+        canvas_type:
+          type: string
+          enum:
+            - full
+            - partial
+          makeup:
+            type: object
+            properties:
+              colors:
+                type: integer
+              electro_beads:
+                type: integer
+              aurora:
+                type: integer
+              fairydust:
+                type: integer
+        bead_properties:
+          type: array
+          minItems: 1
+          maxItems: 5
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Material'
+      required:
+        - dimensions
+        - bead_shape
+      examples:
+        - width: 0
+          height: 0
+          unit: metric
+          type: string
+          makeup:
+            colors: 0
+            electro_beads: 0
+            aurora: 0
+            fairydust: 0
+        - width: 0
+          height: 0
+          unit: metric
+          type: string
+          makeup:
+            colors: 0
+            electro_beads: 0
+            aurora: 0
+            fairydust: 0
+      x-stoplight:
+        id: hdonxeaxcytsd
+    Dimension:
+      type: object
+      description: Dimension entity for projects
+      properties:
+        width:
+          type: number
+        height:
+          type: integer
+        unit:
+          type: string
+          enum:
+            - metric
+            - imperial
+      examples:
+        - width: 75
+          height: 60
+          unit: metric
+        - width: 10
+          height: 20
+          unit: imperial
+      x-stoplight:
+        id: ovwr8khh22v94
+    Material:
+      type: object
+      title: Material
+      description: The number of materials used in a project.
+      properties:
+        total:
+          type: integer
+          exclusiveMinimum: 0
+          default: 1
+          examples:
+            - 123000
+        material_type:
+          type: string
+          enum:
+            - aurora_borialis
+            - fairy_dust
+            - electro
+            - colors
+      x-stoplight:
+        id: 9ogthjeagvvpc
+    Puzzle:
+      type: object
+      properties:
+        dimensions:
+          $ref: '#/components/schemas/Dimension'
+        bead_shape:
+          type: string
+          enum:
+            - square
+            - round
+          default: square
+        canvas_type:
+          type: string
+          enum:
+            - full
+            - partial
+          makeup:
+            type: object
+            properties:
+              colors:
+                type: integer
+              electro_beads:
+                type: integer
+              aurora:
+                type: integer
+              fairydust:
+                type: integer
+        bead_properties:
+          type: array
+          minItems: 1
+          maxItems: 5
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Material'
+      required:
+        - dimensions
+        - bead_shape
+      examples:
+        - width: 0
+          height: 0
+          unit: metric
+          type: string
+          makeup:
+            colors: 0
+            electro_beads: 0
+            aurora: 0
+            fairydust: 0
+        - width: 0
+          height: 0
+          unit: metric
+          type: string
+          makeup:
+            colors: 0
+            electro_beads: 0
+            aurora: 0
+            fairydust: 0
+      x-stoplight:
+        id: qgev7n83g5raa
